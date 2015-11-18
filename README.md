@@ -35,12 +35,12 @@ Note that the first field's index is 1 (not 0).
 
 	toto;12
 
-#### Example with other conditions:
-
-	csvql.rb "[1]>=12" "[2]include:HelloWorld!" "[4]match_line_in_file:/tmp/whitelist.txt"
-
 #### Configuration:
 	-v : verbose mode
 		 Displays step by step debug information in addition to matching lines
 	-q : quiet mode
 		 Displays only matching lines
+
+#### Another Example:
+
+	./csvql.rb -v "[1]>=12" "[2]include:HelloWorld!" "[4]match_line_in_file:/tmp/whitelist.txt"
