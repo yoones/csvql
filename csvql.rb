@@ -106,10 +106,12 @@ end
 
 ## STEP 2 : parse stdin
 
+first_line=true
 while line = $stdin.gets
   f = line.gsub("\n", "").split(';')
   display = true
-  puts "" if verbose == true
+  puts "" if (verbose == true && first_line == false)
+  first_line = false
   puts line if verbose == true
   conditions.each do |c|
     puts "display=#{display.to_s}" if verbose == true
