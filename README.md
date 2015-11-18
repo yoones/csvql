@@ -8,16 +8,18 @@
 	[index]  : Which field (starting from 1) to look in
 	operator : What check to do on this field
 
-* ==
-* !=
-* <
-* >
-* <=
-* >=
-* include:
-* exclude:
-* match_line_in_file:
-* doesnt_match_line_in_file:
+| Operator                      | Description                                 |
+|-------------------------------|---------------------------------------------|
+| ==                            | numerical value must be equal               |
+| !=                            | numerical value must be different than      |
+| <                             | numerical value must be less than           |
+| >                             | numerical value must be greater than        |
+| <=                            | numerical value must be less or equal to    |
+| >=                            | numerical value must be greater or equal to |
+| include:                      | must contain the string                     |
+| exclude:                      | must not contain the string                 |
+| match\_line\_in\_file:        | Value must match any line in the file       |
+| doesnt\_match\_line\_in_file: | Value must not match any line in the file   |
 
 Note that the first field's index is 1 (not 0).
 
