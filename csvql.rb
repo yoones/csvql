@@ -2,11 +2,16 @@
 
 if ARGV.count == 0 || (ARGV.count == "1" && ARGV[0] == "--help")
   $stderr.puts <<EOF
-Usage: csvql "condition1" ["condition2"] [...]
+Usage: csvql [-v] "condition1" ["condition2"] [...]
 Print matching lines from standard input to standard output.
+
+configuration:
+  -v : verbose mode (display matching fields in addition to matching lines)
+  -q : quiet mode (display only matching lines)
 
 condition:
   [field index] operator value
+
 operators:
   == != <= >= < > include: exclude:
 
@@ -17,8 +22,6 @@ First field's index is 1 (not 0).
 EOF
   exit 1
 end
-
-conditions = []
 
 def op_equal(data, value)
   data == value
@@ -63,39 +66,65 @@ operators = {
   "exclude:"    => {func: method(:op_exclude),                  value: ".*"},
 }
 
+## STEP 1 : read configuration and conditions from ARGV
+
+conditions = []
+verbose = false
+
 ARGV.each do |c|
-  index = c.scan(/^\[([0-9]*)\].*$/).last.first
-  if index == ""
-    $stderr.puts "Error: bad index"
-    exit 1
-  end
-  index = index.to_i - 1
-
-  operator = nil
-  value = nil
-  operators.each do |k, v|
-    unless c.scan(/^\[[0-9]*\]#{k}#{v[:value]}$/).last.nil?
-      operator = k
-      value = c.scan(/\[[0-9]*\]#{k}(#{v[:value]})/).last.first
+  ## Configuration
+  if c == "-v" || c == "--verbose"
+    verbose = true
+  elsif c == "-q" || c == "--quiet"
+    verbose = false
+  else
+    ## Condition
+    scan_result = c.scan(/^\[([0-9]*)\].*$/)
+    index = (scan_result.nil? || scan_result.last.nil?) ? nil : scan_result.last.first
+    if index.nil? || index == ""
+      $stderr.puts "Error: bad index"
+      exit 1
     end
-  end
-  if operator.nil?
-    $stderr.puts "Error: unknown operator"
-    exit 1
-  end
+    index = index.to_i - 1
 
-  conditions << {index: index, operator: operator, value: value}
+    operator = nil
+    value = nil
+    operators.each do |k, v|
+      unless c.scan(/^\[[0-9]*\]#{k}#{v[:value]}$/).last.nil?
+        operator = k
+        value = c.scan(/\[[0-9]*\]#{k}(#{v[:value]})/).last.first
+      end
+    end
+    if operator.nil?
+      $stderr.puts "Error: unknown operator"
+      exit 1
+    end
+
+    conditions << {index: index, operator: operator, value: value}
+  end
 end
 
+## STEP 2 : parse stdin
+
 while line = $stdin.gets
-  f = line.split(';')
+  f = line.gsub("\n", "").split(';')
   display = true
+  puts "" if verbose == true
+  puts line if verbose == true
   conditions.each do |c|
+    puts "display=#{display.to_s}" if verbose == true
     func = operators[c[:operator]][:func]
     data = f[c[:index].to_i]
     value = c[:value]
     display = false unless func.call(data, value)
+    if verbose == true
+      puts ">> input    : \"#{data}\""
+      puts ">> condition: \"#{c[:operator]}\""
+      puts ">> value    : \"#{value}\""
+      puts c.to_s
+    end
   end
+  puts "display=#{display.to_s}" if verbose == true
   puts line if display
 end
 
