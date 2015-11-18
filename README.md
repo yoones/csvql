@@ -1,19 +1,43 @@
-# csvql
-Minimalist CSV query tool
+# csvql.rb
 
-Syntax:
+## Minimalist CSV query tool
 
-    [index]  : Which field (starting from 1) to look in
-    operator : == != < > <= >= include: exclude:
 
-Example:
+### Syntax:
 
-    ./csvql "[1]==toto" "[2]>=12" <<EOF
-    toto;2
-    titi;14
-    toto;12
-    EOF
+	[index]  : Which field (starting from 1) to look in
+	operator :
+	* ==
+	* !=
+	* <
+	* >
+	* <=
+	* >=
+	* include:
+	* exclude:
+	* match_line_in_file:
+	* doesnt_match_line_in_file:
 
-This will output:
+	Note that the first field's index is 1 (not 0).
 
-    toto;12
+### Example:
+
+	./csvql "[1]==toto" "[2]>=12" <<EOF
+	toto;2
+	titi;14
+	toto;12
+	EOF
+
+### This will output:
+
+	toto;12
+
+### Example with other conditions:
+
+	csvql "[1]>=12" "[2]include:HelloWorld!" "[4]match_line_in_file:/tmp/whitelist.txt"
+
+### Configuration:
+	-v : verbose mode
+		 Displays step by step debug information in addition to matching lines
+	-q : quiet mode
+		 Displays only matching lines
