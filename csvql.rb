@@ -13,10 +13,10 @@ condition:
   [field index] operator value
 
 operators:
-  == != <= >= < > include: exclude:
+  == != <= >= < > include: exclude: match_line_in_file: doesnt_match_line_in_file:
 
 Example:
-csvql "[1]>=12" "[2]include:HelloWorld!"
+csvql "[1]>=12" "[2]include:HelloWorld!" "[4]match_line_in_file:/tmp/whitelist.txt
 
 First field's index is 1 (not 0).
 EOF
@@ -55,15 +55,33 @@ def op_exclude(data, value)
   !data.include?(value)
 end
 
+def op_match_line_in_file(data, value)
+  fd = File.open(value) or die "Error: open(#{file}) failed"
+  fd.readlines.each do |line|
+    if line.gsub("\n", "") == data
+      fd.close
+      return true
+    end
+  end
+  fd.close
+  false
+end
+
+def op_doesnt_match_line_in_file(data, value)
+  !op_in_file(data, value)
+end
+
 operators = {
-  "=="          => {func: method(:op_equal),                    value: ".*"},
-  "!="          => {func: method(:op_not_equal),                value: ".*"},
-  "<="          => {func: method(:op_less_or_equal_to),         value: ".*"},
-  ">="          => {func: method(:op_greater_or_equal_to),      value: ".*"},
-  "<"           => {func: method(:op_less_than),                value: "[0-9]*"},
-  ">"           => {func: method(:op_greater_than),             value: "[0-9]*"},
-  "include:"    => {func: method(:op_include),                  value: ".*"},
-  "exclude:"    => {func: method(:op_exclude),                  value: ".*"},
+  "=="                         => {func: method(:op_equal),                     value: ".*"},
+  "!="                         => {func: method(:op_not_equal),                 value: ".*"},
+  "<="                         => {func: method(:op_less_or_equal_to),          value: ".*"},
+  ">="                         => {func: method(:op_greater_or_equal_to),       value: ".*"},
+  "<"                          => {func: method(:op_less_than),                 value: "[0-9]*"},
+  ">"                          => {func: method(:op_greater_than),              value: "[0-9]*"},
+  "include:"                   => {func: method(:op_include),                   value: ".*"},
+  "exclude:"                   => {func: method(:op_exclude),                   value: ".*"},
+  "match_line_in_file:"        => {func: method(:op_match_line_in_file),        value: ".*"},
+  "doesnt_match_line_in_file:" => {func: method(:op_doesnt_match_line_in_file), value: ".*"},
 }
 
 ## STEP 1 : read configuration and conditions from ARGV
