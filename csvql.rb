@@ -1,7 +1,20 @@
 #!/usr/bin/env ruby
 
-if ARGV.count == 0
-  $stderr.puts 'Usage: csvql "condition1" ["condition2"] [...]'
+if ARGV.count == 0 || (ARGV.count == "1" && ARGV[0] == "--help")
+  $stderr.puts <<EOF
+Usage: csvql "condition1" ["condition2"] [...]
+Print matching lines from standard input to standard output.
+
+condition:
+  [field index] operator value
+operators:
+  == != <= >= < > include: exclude:
+
+Example:
+csvql "[1]>=12" "[2]include:HelloWorld!"
+
+First field's index is 1 (not 0).
+EOF
   exit 1
 end
 
